@@ -13,3 +13,4 @@
 - 2026-11-24: Add an Export results button that saves x, V, M, and deflection along the beam as an Excel-readable CSV. Added a compact Export CSV button, UTF-8 BOM CSV export of all 101 stations, spec documentation, and coverage; verified the Tkinter export flow and 9 passing tests. Worked.
 - 2026-11-24: Add a Calculation Sheet button that saves a hand-in-ready PDF with inputs, diagrams, and checks. Added a one-page landscape PDF report and button, documented the feature, and verified a real Tkinter export plus 10 passing tests. Worked.
 - 2026-11-24: Rerun the validation cases in spec.md and confirm they pass. Rechecked all five required scenarios against closed-form expected values and reran the focused suite; all five cases and all 10 tests passed. Worked.
+- 2026-11-24: Write a short README explaining the app, packages to install, and launch command. Added README.md with a brief feature summary, install command, and `python app.py` launch instruction. Worked.
