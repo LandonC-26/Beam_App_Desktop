@@ -43,50 +43,51 @@ class BeamApp(tk.Tk):
 
     def _section(self, title, parent):
         frame = ttk.LabelFrame(parent, text=title)
-        frame.pack(fill="x", padx=14, pady=(12, 4))
+        frame.pack(fill="x", padx=8, pady=(5, 2))
         return frame
 
     def _build_controls(self):
         beam = self._section("Beam", self.controls)
-        tk.Label(beam, text="Support type").pack(anchor="w", padx=8)
+        tk.Label(beam, text="Support type", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.beam_type = ttk.Combobox(beam, values=("Simply supported", "Cantilever"),
                                       state="readonly")
         self.beam_type.set("Simply supported")
-        self.beam_type.pack(fill="x", padx=8, pady=(0, 8))
-        tk.Label(beam, text="Span (ft)").pack(anchor="w", padx=8)
+        self.beam_type.pack(fill="x", padx=6, pady=(0, 4))
+        tk.Label(beam, text="Span (ft)", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.span = tk.Entry(beam)
         self.span.insert(0, "20")
-        self.span.pack(fill="x", padx=8, pady=(0, 8))
+        self.span.pack(fill="x", padx=6, pady=(0, 4))
 
         loads = self._section("Loads", self.controls)
-        tk.Label(loads, text="Uniform load (kip/ft)").pack(anchor="w", padx=8)
+        tk.Label(loads, text="Uniform load (kip/ft)", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.uniform = tk.Entry(loads)
         self.uniform.insert(0, "1")
-        self.uniform.pack(fill="x", padx=8, pady=(0, 8))
+        self.uniform.pack(fill="x", padx=6, pady=(0, 4))
         self.point_rows = tk.Frame(loads)
-        self.point_rows.pack(fill="x", padx=8)
+        self.point_rows.pack(fill="x", padx=6)
         tk.Button(loads, text="+ Add point load", command=self.add_point_load,
-                  bg="#eff6ff", fg="#2463eb", relief="groove").pack(fill="x", padx=8, pady=8)
+                  bg="#eff6ff", fg="#2463eb", relief="groove").pack(fill="x", padx=6, pady=4)
         self.self_weight = tk.BooleanVar(value=False)
         self.self_weight_check = tk.Checkbutton(loads, text="Include steel self-weight",
-                                                variable=self.self_weight)
-        self.self_weight_check.pack(anchor="w", padx=8, pady=(0, 8))
+                                                variable=self.self_weight,
+                                                font=("Segoe UI", 9))
+        self.self_weight_check.pack(anchor="w", padx=6, pady=(0, 4))
 
         section = self._section("Section", self.controls)
-        tk.Label(section, text="Material").pack(anchor="w", padx=8)
+        tk.Label(section, text="Material", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.material = ttk.Combobox(section, values=("Steel", "Lumber"), state="readonly")
         self.material.set("Steel")
         self.material.bind("<<ComboboxSelected>>", lambda event: self.update_sections())
-        self.material.pack(fill="x", padx=8, pady=(0, 8))
+        self.material.pack(fill="x", padx=6, pady=(0, 4))
 
-        tk.Label(section, text="Section").pack(anchor="w", padx=8)
+        tk.Label(section, text="Section", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.section_choice = ttk.Combobox(section, values=(), state="readonly")
-        self.section_choice.pack(fill="x", padx=8, pady=(0, 8))
+        self.section_choice.pack(fill="x", padx=6, pady=(0, 4))
 
         stress_row = tk.Frame(section)
-        stress_row.pack(fill="x", padx=8, pady=(0, 8))
-        tk.Label(stress_row, text="Allowable stress").grid(row=0, column=0, sticky="w")
-        tk.Label(stress_row, text="Stress unit").grid(row=0, column=1, sticky="w")
+        stress_row.pack(fill="x", padx=6, pady=(0, 4))
+        tk.Label(stress_row, text="Allowable stress", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="w")
+        tk.Label(stress_row, text="Stress unit", font=("Segoe UI", 9)).grid(row=0, column=1, sticky="w")
         self.allowable = tk.Entry(stress_row)
         self.allowable.insert(0, "24")
         self.allowable.grid(row=1, column=0, sticky="ew", padx=(0, 5))
@@ -96,19 +97,22 @@ class BeamApp(tk.Tk):
         stress_row.columnconfigure(0, weight=1)
         stress_row.columnconfigure(1, weight=1)
 
-        tk.Label(section, text="Deflection limit").pack(anchor="w", padx=8)
+        tk.Label(section, text="Deflection limit", font=("Segoe UI", 9)).pack(anchor="w", padx=6)
         self.deflection_limit = ttk.Combobox(section, values=("L/240", "L/360", "L/480"),
                                              state="readonly")
         self.deflection_limit.set("L/360")
-        self.deflection_limit.pack(fill="x", padx=8, pady=(0, 8))
+        self.deflection_limit.pack(fill="x", padx=6, pady=(0, 4))
 
-        tk.Button(self.controls, text="Calculate beam", command=self.calculate,
-                  bg="#2463eb", fg="white", activebackground="#194ba8",
-                  activeforeground="white", relief="flat", font=("Segoe UI", 10, "bold"),
-                  height=2).pack(fill="x", padx=14, pady=16)
+        self.calculate_button = tk.Button(
+            self.controls, text="Calculate beam", command=self.calculate,
+            bg="#2463eb", fg="white", activebackground="#194ba8",
+            activeforeground="white", relief="flat", font=("Segoe UI", 10, "bold"),
+            height=1
+        )
+        self.calculate_button.pack(fill="x", padx=8, pady=(5, 4))
         self.error = tk.Label(self.controls, text="", fg="#b42318",
                               wraplength=290, justify="left")
-        self.error.pack(fill="x", padx=14)
+        self.error.pack(fill="x", padx=8)
 
     def update_sections(self):
         is_steel = self.material.get() == "Steel"

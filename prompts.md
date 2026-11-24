@@ -7,3 +7,4 @@
 - 2026-11-24: Read spec.md and build the desktop app, using index.html as the behavior reference. Added app.py, beam_core.py, test_beam_core.py, and requirements.txt; verified 4 focused tests and GUI startup, and committed the implementation. Worked.
 - 2026-11-24: Recreate prompts.md for all prompts in this session. Added this session log entry and committed it locally. Worked.
 - 2026-11-24: Compress the moment/shear/deflection/section section and the bending/deflection test section to give more space to the charts. Reduced the top cards and check-card content to compact single-row/short-row layouts, verified syntax, tests, and GUI startup, and committed it locally. Worked.
+- 2026-11-24: Shrink Beam, Loads, and Section groups to keep the Calculate button visible. Tightened section and field spacing, reduced label and button height, and verified the button is mapped within the controls at 1000x700; all 4 calculation tests pass. Worked.
