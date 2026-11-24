@@ -1,9 +1,16 @@
+import csv
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from beam_io import open_design_file, save_design_file, validate_design_document
+from beam_core import Station
+from beam_io import (
+    export_results_csv,
+    open_design_file,
+    save_design_file,
+    validate_design_document,
+)
 
 
 SAMPLE_DESIGN = {
@@ -46,6 +53,20 @@ class BeamIoTests(unittest.TestCase):
         document["version"] = 2
         with self.assertRaisesRegex(ValueError, "version"):
             validate_design_document(document)
+
+    def test_export_results_csv_for_excel(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "results.csv"
+            stations = (
+                Station(0.0, 5.0, 0.0, 0.0),
+                Station(1.0, -5.0, -10.0, 0.125),
+            )
+            export_results_csv(path, stations)
+            with path.open(encoding="utf-8-sig", newline="") as csv_file:
+                rows = list(csv.reader(csv_file))
+        self.assertEqual(rows[0], ["x_ft", "V_kips", "M_kip_ft", "deflection_in"])
+        self.assertEqual(len(rows), len(stations) + 1)
+        self.assertEqual(rows[2], ["1.0", "-5.0", "-10.0", "0.125"])
 
 
 if __name__ == "__main__":

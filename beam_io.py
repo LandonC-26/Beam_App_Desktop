@@ -1,3 +1,4 @@
+import csv
 import json
 
 from beam_core import SECTIONS, validate_number
@@ -98,3 +99,16 @@ def open_design_file(path):
     with open(path, "r", encoding="utf-8") as design_file:
         document = json.load(design_file)
     return validate_design_document(document)
+
+
+def export_results_csv(path, stations):
+    with open(path, "w", encoding="utf-8-sig", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(("x_ft", "V_kips", "M_kip_ft", "deflection_in"))
+        for station in stations:
+            writer.writerow((
+                station.x,
+                station.shear,
+                station.moment,
+                station.deflection,
+            ))

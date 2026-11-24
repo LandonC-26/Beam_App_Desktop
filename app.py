@@ -1,3 +1,4 @@
+import csv
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
@@ -7,7 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from beam_core import SECTIONS, PointLoad, analyze, validate_number
-from beam_io import open_design_file, save_design_file
+from beam_io import export_results_csv, open_design_file, save_design_file
 
 
 class BeamApp(tk.Tk):
@@ -115,13 +116,23 @@ class BeamApp(tk.Tk):
         self.deflection_limit.set("L/360")
         self.deflection_limit.pack(fill="x", padx=6, pady=(0, 4))
 
+        action_buttons = tk.Frame(self.controls, bg="white")
+        action_buttons.pack(fill="x", padx=8, pady=(5, 4))
+        action_buttons.columnconfigure(0, weight=1)
+        action_buttons.columnconfigure(1, weight=1)
         self.calculate_button = tk.Button(
-            self.controls, text="Calculate beam", command=self.calculate,
+            action_buttons, text="Calculate", command=self.calculate,
             bg="#2463eb", fg="white", activebackground="#194ba8",
             activeforeground="white", relief="flat", font=("Segoe UI", 10, "bold"),
             height=1
         )
-        self.calculate_button.pack(fill="x", padx=8, pady=(5, 4))
+        self.calculate_button.grid(row=0, column=0, sticky="ew", padx=(0, 3))
+        self.export_button = tk.Button(
+            action_buttons, text="Export CSV", command=self.export_results,
+            bg="#eff6ff", fg="#2463eb", activebackground="#dbeafe",
+            relief="groove", font=("Segoe UI", 10, "bold"), height=1
+        )
+        self.export_button.grid(row=0, column=1, sticky="ew", padx=(3, 0))
         self.error = tk.Label(self.controls, text="", fg="#b42318",
                               wraplength=290, justify="left")
         self.error.pack(fill="x", padx=8)
@@ -341,6 +352,27 @@ class BeamApp(tk.Tk):
                 str(point["position_ft"]),
             )
         self.calculate()
+
+    def export_results(self):
+        path = filedialog.asksaveasfilename(
+            parent=self,
+            title="Export Beam Results",
+            defaultextension=".csv",
+            filetypes=(("CSV files", "*.csv"), ("All files", "*.*")),
+        )
+        if not path:
+            return
+
+        self.calculate()
+        error = self.error.cget("text")
+        if error:
+            messagebox.showerror("Cannot export results", error, parent=self)
+            return
+
+        try:
+            export_results_csv(path, self.result.stations)
+        except (OSError, csv.Error) as exc:
+            messagebox.showerror("Export failed", str(exc), parent=self)
 
     def _clear_card(self, card):
         for widget in card.winfo_children():

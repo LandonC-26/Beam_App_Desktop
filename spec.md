@@ -59,6 +59,12 @@ and stiffness.
 - Invalid or unsupported design files are reported without applying partial
   changes
 
+## Export Results
+- An Export CSV button saves the analysis stations as an Excel-compatible CSV
+- Include position \(x\) in feet, shear \(V\) in kips, moment \(M\) in kip-ft,
+  and downward-positive deflection in inches
+- Export all 101 evenly spaced stations used in the analysis
+
 ## Look and feel
 - Clean, professional Tkinter desktop interface
 - Example beam preloaded when the app starts
