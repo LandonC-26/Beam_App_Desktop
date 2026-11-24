@@ -1,0 +1,8 @@
+- 2026-11-24: Create an AGENTS.md at the project root with two repository instructions. Added the file containing both requested lines and committed it. Worked.
+- 2026-11-24: Clarify that significant changes should receive clear commit messages and be committed locally without pushing. Added the local commit rule to AGENTS.md and committed it. Worked.
+- 2026-11-24: Help restore pip to PATH. Diagnosed Python/pip locations, added the active Python Scripts directory and Python bin directory to the user PATH, and verified pip 26.3. Worked.
+- 2026-11-24: Determine whether pip 26.3 is in PATH or elsewhere. Confirmed pip 26.3 is installed in the Python 3.15 site-packages directory and its pip.exe launcher is in the Python bin directory on PATH. Worked.
+- 2026-11-24: Fix pip so pip 26.3 is in PATH. Verified pip and pip3 resolve to the Python bin directory and pip --version reports 26.3. Worked.
+- 2026-11-24: Update spec.md to describe a Python desktop app using Tkinter. Revised the purpose and look-and-feel sections while preserving the beam-analysis requirements, and committed the change. Worked.
+- 2026-11-24: Read spec.md and build the desktop app, using index.html as the behavior reference. Added app.py, beam_core.py, test_beam_core.py, and requirements.txt; verified 4 focused tests and GUI startup, and committed the implementation. Worked.
+- 2026-11-24: Recreate prompts.md for all prompts in this session. Added this session log entry and committed it locally. Worked.
