@@ -51,6 +51,14 @@ and stiffness.
 - Actual deflection and allowed deflection
 - Separate pass/fail results and governing utilization ratios
 
+## Save and Open
+- A File menu provides Save and Open commands for JSON design files
+- Save support type, span, material and section, deflection limit, allowable
+  stress, uniform load, point loads, and self-weight setting
+- Opening a design restores its saved inputs and recalculates the results
+- Invalid or unsupported design files are reported without applying partial
+  changes
+
 ## Look and feel
 - Clean, professional Tkinter desktop interface
 - Example beam preloaded when the app starts

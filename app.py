@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import filedialog, messagebox, ttk
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from beam_core import SECTIONS, PointLoad, analyze, validate_number
+from beam_io import open_design_file, save_design_file
 
 
 class BeamApp(tk.Tk):
@@ -16,6 +17,7 @@ class BeamApp(tk.Tk):
         self.geometry("1400x900")
         self.minsize(1000, 700)
         self.configure(bg="#eef3f8")
+        self._build_menu()
 
         header = tk.Frame(self, bg="#172033", height=62)
         header.pack(fill="x")
@@ -40,6 +42,16 @@ class BeamApp(tk.Tk):
         self._build_output()
         self.update_sections()
         self.calculate()
+
+    def _build_menu(self):
+        menu_bar = tk.Menu(self)
+        file_menu = tk.Menu(menu_bar, tearoff=False)
+        file_menu.add_command(label="Save", command=self.save_design, accelerator="Ctrl+S")
+        file_menu.add_command(label="Open", command=self.open_design, accelerator="Ctrl+O")
+        menu_bar.add_cascade(label="File", menu=file_menu)
+        self.configure(menu=menu_bar)
+        self.bind("<Control-s>", lambda event: self.save_design())
+        self.bind("<Control-o>", lambda event: self.open_design())
 
     def _section(self, title, parent):
         frame = ttk.LabelFrame(parent, text=title)
@@ -228,6 +240,107 @@ class BeamApp(tk.Tk):
             self._render(result)
         except (ValueError, StopIteration) as exc:
             self.error.configure(text=str(exc))
+
+    def save_design(self):
+        path = filedialog.asksaveasfilename(
+            parent=self,
+            title="Save Beam Design",
+            defaultextension=".json",
+            filetypes=(("Beam design files", "*.json"), ("All files", "*.*")),
+        )
+        if not path:
+            return
+
+        self.calculate()
+        error = self.error.cget("text")
+        if error:
+            messagebox.showerror("Cannot save design", error, parent=self)
+            return
+
+        try:
+            document = {
+                "version": 1,
+                "beam": {
+                    "support_type": (
+                        "simple" if self.beam_type.get() == "Simply supported"
+                        else "cantilever"
+                    ),
+                    "span_ft": validate_number(self.span.get(), "Span", 0.0001),
+                    "material": (
+                        "steel" if self.material.get() == "Steel" else "lumber"
+                    ),
+                    "section": self.section_choice.get(),
+                    "deflection_limit": int(
+                        self.deflection_limit.get().split("/")[1]
+                    ),
+                    "allowable_stress": validate_number(
+                        self.allowable.get(), "Allowable stress", 0.0001
+                    ),
+                    "stress_unit": self.stress_unit.get(),
+                },
+                "loads": {
+                    "uniform_kip_ft": validate_number(
+                        self.uniform.get(), "Uniform load", 0
+                    ),
+                    "point_loads": [
+                        {
+                            "magnitude_kip": validate_number(
+                                row.load_entry.get(), "Point-load magnitude", 0
+                            ),
+                            "position_ft": validate_number(
+                                row.location_entry.get(), "Point-load position",
+                                0, validate_number(self.span.get(), "Span", 0.0001)
+                            ),
+                        }
+                        for row in self.point_rows.winfo_children()
+                    ],
+                    "include_self_weight": self.self_weight.get(),
+                },
+            }
+            save_design_file(path, document)
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Save failed", str(exc), parent=self)
+
+    def open_design(self):
+        path = filedialog.askopenfilename(
+            parent=self,
+            title="Open Beam Design",
+            filetypes=(("Beam design files", "*.json"), ("All files", "*.*")),
+        )
+        if not path:
+            return
+
+        try:
+            document = open_design_file(path)
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Open failed", str(exc), parent=self)
+            return
+
+        beam = document["beam"]
+        loads = document["loads"]
+        self.beam_type.set(
+            "Simply supported" if beam["support_type"] == "simple" else "Cantilever"
+        )
+        self.span.delete(0, "end")
+        self.span.insert(0, str(beam["span_ft"]))
+        self.material.set("Steel" if beam["material"] == "steel" else "Lumber")
+        self.update_sections()
+        self.section_choice.set(beam["section"])
+        self.allowable.delete(0, "end")
+        self.allowable.insert(0, str(beam["allowable_stress"]))
+        self.stress_unit.set(beam["stress_unit"])
+        self.deflection_limit.set(f"L/{beam['deflection_limit']}")
+        self.uniform.delete(0, "end")
+        self.uniform.insert(0, str(loads["uniform_kip_ft"]))
+        self.self_weight.set(loads["include_self_weight"])
+        for row in self.point_rows.winfo_children():
+            row.destroy()
+        for point in loads["point_loads"]:
+            self.add_point_load(
+                str(point["magnitude_kip"]),
+                str(point["position_ft"]),
+            )
+        self.calculate()
 
     def _clear_card(self, card):
         for widget in card.winfo_children():
