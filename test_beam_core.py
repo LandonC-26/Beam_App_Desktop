@@ -24,6 +24,15 @@ class BeamCoreTests(unittest.TestCase):
         self.assertAlmostEqual(abs(result.reactions["RA"]), 5.0)
         self.assertAlmostEqual(abs(result.max_moment.moment), 50.0, places=2)
 
+    def test_cantilever_uniform_load(self):
+        section = next(section for section in SECTIONS if section.designation == "W12x26")
+        result = analyze(10, "cantilever", section, 1.0, (), 24.0, 360)
+        self.assertAlmostEqual(result.reactions["RA"], 10.0)
+        self.assertAlmostEqual(abs(result.max_shear.shear), 10.0)
+        self.assertAlmostEqual(abs(result.max_moment.moment), 50.0, places=2)
+        self.assertAlmostEqual(result.bending_stress, 50.0 * 12.0 / section.S, places=2)
+        self.assertAlmostEqual(abs(result.max_deflection.deflection), 0.365112, places=5)
+
     def test_point_load_position_validation(self):
         section = next(section for section in SECTIONS if section.designation == "W12x26")
         with self.assertRaises(ValueError):

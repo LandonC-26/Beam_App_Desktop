@@ -140,7 +140,7 @@ def analyze(
         else:
             w = uniform / 12.0
             shear = w * (L - x_in)
-            moment = -w * (L - x_in) ** 2 / 2.0
+            moment = -w * (L - x_in) ** 2 / 24.0
             deflection = w * x_in ** 2 * (
                 6.0 * L ** 2 - 4.0 * L * x_in + x_in ** 2
             ) / (24.0 * EI)
