@@ -4,8 +4,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from beam_core import Station
+from beam_core import SECTIONS, PointLoad, Station, analyze
 from beam_io import (
+    export_calculation_pdf,
     export_results_csv,
     open_design_file,
     save_design_file,
@@ -67,6 +68,24 @@ class BeamIoTests(unittest.TestCase):
         self.assertEqual(rows[0], ["x_ft", "V_kips", "M_kip_ft", "deflection_in"])
         self.assertEqual(len(rows), len(stations) + 1)
         self.assertEqual(rows[2], ["1.0", "-5.0", "-10.0", "0.125"])
+
+    def test_export_calculation_sheet_pdf(self):
+        section = next(section for section in SECTIONS if section.designation == "W12x26")
+        result = analyze(20, "simple", section, 1.0, (PointLoad(5, 10),), 24, 360)
+        input_details = {
+            "support": "Simply supported",
+            "uniform_load": "1",
+            "point_loads": "5 kip at 10 ft",
+            "allowable_stress": "24 ksi",
+            "self_weight": "Off",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "calculation-sheet.pdf"
+            export_calculation_pdf(path, result, input_details)
+            content = path.read_bytes()
+        self.assertTrue(content.startswith(b"%PDF-"))
+        self.assertIn(b"%%EOF", content)
+        self.assertGreater(len(content), 10000)
 
 
 if __name__ == "__main__":

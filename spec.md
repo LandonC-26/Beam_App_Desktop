@@ -65,6 +65,13 @@ and stiffness.
   and downward-positive deflection in inches
 - Export all 101 evenly spaced stations used in the analysis
 
+## Calculation Sheet
+- A button saves a print-ready PDF calculation sheet
+- List the design inputs at the top, including supports, span, section,
+  material, loads, allowable stress, and deflection limit
+- Include the beam/load sketch, shear, moment, and deflection diagrams,
+  reactions, and bending and deflection checks
+
 ## Look and feel
 - Clean, professional Tkinter desktop interface
 - Example beam preloaded when the app starts

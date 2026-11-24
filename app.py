@@ -8,7 +8,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from beam_core import SECTIONS, PointLoad, analyze, validate_number
-from beam_io import export_results_csv, open_design_file, save_design_file
+from beam_io import (
+    export_calculation_pdf,
+    export_results_csv,
+    open_design_file,
+    save_design_file,
+)
 
 
 class BeamApp(tk.Tk):
@@ -118,8 +123,8 @@ class BeamApp(tk.Tk):
 
         action_buttons = tk.Frame(self.controls, bg="white")
         action_buttons.pack(fill="x", padx=8, pady=(5, 4))
-        action_buttons.columnconfigure(0, weight=1)
-        action_buttons.columnconfigure(1, weight=1)
+        for column in range(3):
+            action_buttons.columnconfigure(column, weight=1)
         self.calculate_button = tk.Button(
             action_buttons, text="Calculate", command=self.calculate,
             bg="#2463eb", fg="white", activebackground="#194ba8",
@@ -132,7 +137,13 @@ class BeamApp(tk.Tk):
             bg="#eff6ff", fg="#2463eb", activebackground="#dbeafe",
             relief="groove", font=("Segoe UI", 10, "bold"), height=1
         )
-        self.export_button.grid(row=0, column=1, sticky="ew", padx=(3, 0))
+        self.export_button.grid(row=0, column=1, sticky="ew", padx=3)
+        self.pdf_button = tk.Button(
+            action_buttons, text="PDF Sheet", command=self.export_calculation_sheet,
+            bg="#eff6ff", fg="#2463eb", activebackground="#dbeafe",
+            relief="groove", font=("Segoe UI", 10, "bold"), height=1
+        )
+        self.pdf_button.grid(row=0, column=2, sticky="ew", padx=(3, 0))
         self.error = tk.Label(self.controls, text="", fg="#b42318",
                               wraplength=290, justify="left")
         self.error.pack(fill="x", padx=8)
@@ -373,6 +384,38 @@ class BeamApp(tk.Tk):
             export_results_csv(path, self.result.stations)
         except (OSError, csv.Error) as exc:
             messagebox.showerror("Export failed", str(exc), parent=self)
+
+    def export_calculation_sheet(self):
+        path = filedialog.asksaveasfilename(
+            parent=self,
+            title="Save Calculation Sheet",
+            defaultextension=".pdf",
+            filetypes=(("PDF files", "*.pdf"), ("All files", "*.*")),
+        )
+        if not path:
+            return
+
+        self.calculate()
+        error = self.error.cget("text")
+        if error:
+            messagebox.showerror("Cannot create calculation sheet", error, parent=self)
+            return
+
+        point_loads = "; ".join(
+            f"{row.load_entry.get()} kip at {row.location_entry.get()} ft"
+            for row in self.point_rows.winfo_children()
+        ) or "None"
+        input_details = {
+            "support": self.beam_type.get(),
+            "uniform_load": self.uniform.get(),
+            "point_loads": point_loads,
+            "allowable_stress": f"{self.allowable.get()} {self.stress_unit.get()}",
+            "self_weight": "Included" if self.self_weight.get() else "Off",
+        }
+        try:
+            export_calculation_pdf(path, self.result, input_details)
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("PDF export failed", str(exc), parent=self)
 
     def _clear_card(self, card):
         for widget in card.winfo_children():
