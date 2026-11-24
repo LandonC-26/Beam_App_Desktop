@@ -150,16 +150,15 @@ class BeamApp(tk.Tk):
         for i in range(4):
             stats.columnconfigure(i, weight=1)
         self.stat_labels = []
-        for i, title in enumerate(("Maximum moment", "Maximum shear",
-                                   "Maximum deflection", "Section")):
+        for i, title in enumerate(("Moment", "Shear", "Deflection", "Section")):
             card = tk.Frame(stats, bg="white", relief="solid", bd=1)
             card.grid(row=0, column=i, sticky="ew", padx=(0, 8 if i < 3 else 0),
-                      pady=(0, 10), ipady=8)
-            tk.Label(card, text=title, bg="white", fg="#62708a",
-                     font=("Segoe UI", 9)).pack(anchor="w", padx=10)
+                      pady=(0, 5), ipady=3)
+            tk.Label(card, text=f"{title}: ", bg="white", fg="#62708a",
+                     font=("Segoe UI", 9)).pack(side="left", padx=(8, 0), pady=4)
             value = tk.Label(card, text="-", bg="white", fg="#172033",
-                             font=("Segoe UI", 13, "bold"))
-            value.pack(anchor="w", padx=10)
+                             font=("Segoe UI", 11, "bold"))
+            value.pack(side="left", pady=4)
             self.stat_labels.append(value)
 
         self.checks = tk.Frame(self.output, bg="#eef3f8")
@@ -167,11 +166,11 @@ class BeamApp(tk.Tk):
         self.checks.columnconfigure(0, weight=1)
         self.checks.columnconfigure(1, weight=1)
         self.bending_card = tk.Frame(self.checks)
-        self.bending_card.grid(row=0, column=0, sticky="ew", padx=(0, 5), pady=(0, 8))
+        self.bending_card.grid(row=0, column=0, sticky="ew", padx=(0, 5), pady=(0, 5))
         self.deflection_card = tk.Frame(self.checks)
-        self.deflection_card.grid(row=0, column=1, sticky="ew", padx=(5, 0), pady=(0, 8))
+        self.deflection_card.grid(row=0, column=1, sticky="ew", padx=(5, 0), pady=(0, 5))
         self.overall_card = tk.Frame(self.checks)
-        self.overall_card.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 8))
+        self.overall_card.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 5))
 
         plot_container = tk.Frame(self.output, bg="#eef3f8")
         plot_container.grid(row=2, column=0, sticky="nsew")
@@ -234,14 +233,17 @@ class BeamApp(tk.Tk):
         self._clear_card(card)
         card.configure(bg="#ecfdf3" if passed else "#fff1f0",
                        relief="solid", bd=1)
-        tk.Label(card, text=f"{title}: {'PASS' if passed else 'FAIL'}",
-                 bg=card.cget("bg"),
+        header = tk.Frame(card, bg=card.cget("bg"))
+        header.pack(fill="x", padx=8, pady=(3, 1))
+        tk.Label(header, text=title, bg=card.cget("bg"), fg="#172033",
+                 font=("Segoe UI", 9, "bold")).pack(side="left")
+        tk.Label(header, text="PASS" if passed else "FAIL", bg=card.cget("bg"),
                  fg="#15803d" if passed else "#b42318",
-                 font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=12, pady=(8, 2))
-        for line in lines:
-            tk.Label(card, text=line, bg=card.cget("bg"),
-                     fg="#172033", font=("Segoe UI", 9)).pack(anchor="w", padx=12)
-        tk.Label(card, text="", bg=card.cget("bg")).pack(pady=2)
+                 font=("Segoe UI", 9, "bold")).pack(side="right")
+        tk.Label(card, text="  |  ".join(lines[:2]), bg=card.cget("bg"),
+                 fg="#172033", font=("Segoe UI", 8)).pack(anchor="w", padx=8)
+        tk.Label(card, text="  |  ".join(lines[2:]), bg=card.cget("bg"),
+                 fg="#172033", font=("Segoe UI", 8)).pack(anchor="w", padx=8, pady=(0, 3))
 
     def _render(self, result):
         self.result = result
@@ -275,21 +277,16 @@ class BeamApp(tk.Tk):
         self.overall_card.configure(
             bg="#ecfdf3" if overall_pass else "#fff1f0",
             relief="solid", bd=1)
-        tk.Label(self.overall_card,
-                 text="Congratulations - the beam passes!" if overall_pass
-                 else "The beam does not pass.",
-                 bg=self.overall_card.cget("bg"),
-                 fg="#15803d" if overall_pass else "#b42318",
-                 font=("Segoe UI", 12, "bold")).pack(pady=(8, 2))
         failures = []
         if not bending_pass:
             failures.append("bending strength")
         if not deflection_pass:
             failures.append("deflection stiffness")
-        detail = ("Bending strength and deflection stiffness both meet the selected limits."
-                  if overall_pass else f"Fails: {' and '.join(failures)}.")
-        tk.Label(self.overall_card, text=detail, bg=self.overall_card.cget("bg"),
-                 fg="#172033", font=("Segoe UI", 9)).pack(pady=(0, 8))
+        summary = ("Congratulations - the beam passes!" if overall_pass
+                   else f"The beam does not pass. Fails: {' and '.join(failures)}.")
+        tk.Label(self.overall_card, text=summary, bg=self.overall_card.cget("bg"),
+                 fg="#15803d" if overall_pass else "#b42318",
+                 font=("Segoe UI", 9, "bold")).pack(pady=4)
 
         self._draw_beam(result)
         self._draw_diagram(1, "shear", lambda station: station.shear,
